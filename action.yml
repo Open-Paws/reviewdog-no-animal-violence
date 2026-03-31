@@ -28,16 +28,16 @@ runs:
   steps:
     - uses: reviewdog/action-setup@v1
 
-    - name: Install speciesist language checker
+    - name: Install no-animal-violence checker
       shell: bash
-      run: pip install https://github.com/Open-Paws/speciesist-language-pre-commit/archive/refs/tags/v0.1.0.tar.gz
+      run: pip install https://github.com/Open-Paws/no-animal-violence-pre-commit/archive/refs/tags/v0.2.0.tar.gz
 
-    - name: Run speciesist language check with reviewdog
+    - name: Run no-animal-violence check with reviewdog
       shell: bash
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
       run: |
         find . -type f \( -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.md" -o -name "*.txt" -o -name "*.rst" -o -name "*.yaml" -o -name "*.yml" -o -name "*.go" -o -name "*.rs" -o -name "*.java" -o -name "*.rb" \) \
           -not -path "./.git/*" -not -path "./node_modules/*" -not -path "./vendor/*" \
-          -exec speciesist-language-check {} + 2>&1 \
-          | reviewdog -efm="%f:%l: %m" -name="speciesist-language" -reporter=${{ inputs.reporter }} -level=${{ inputs.level }} -filter-mode=${{ inputs.filter_mode }}
+          -exec no-animal-violence-check {} + 2>&1 \
+          | reviewdog -efm="%f:%l: %m" -name="no-animal-violence" -reporter=${{ inputs.reporter }} -level=${{ inputs.level }} -filter-mode=${{ inputs.filter_mode }}
