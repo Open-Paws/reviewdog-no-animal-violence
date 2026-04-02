@@ -1,8 +1,8 @@
-# reviewdog-speciesism
+# reviewdog-no-animal-violence
 
 A [reviewdog](https://github.com/reviewdog/reviewdog) runner for detecting speciesist language in pull requests.
 
-Wraps [speciesist-language-pre-commit](https://github.com/Open-Paws/speciesist-language-pre-commit) to automatically flag speciesist terms and suggest inclusive alternatives directly on PR diffs.
+Wraps [no-animal-violence-pre-commit](https://github.com/Open-Paws/no-animal-violence-pre-commit) to automatically flag speciesist terms and suggest inclusive alternatives directly on PR diffs.
 
 ## Usage
 
@@ -20,7 +20,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.x'
-      - uses: Open-Paws/reviewdog-speciesism@v1
+      - uses: Open-Paws/reviewdog-no-animal-violence@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -57,7 +57,7 @@ The scanner identifies speciesist language patterns — phrases that normalize t
 - "beat a dead horse" -> "feed a fed horse"
 - "guinea pig" (as verb) -> "test subject"
 
-See the [speciesist-language-pre-commit](https://github.com/Open-Paws/speciesist-language-pre-commit) repo for the full term list.
+See the [no-animal-violence-pre-commit](https://github.com/Open-Paws/no-animal-violence-pre-commit) repo for the full term list.
 
 ## License
 

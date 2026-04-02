@@ -27,7 +27,7 @@ jobs:
 This is a **composite GitHub Action** that chains three tools:
 
 1. **reviewdog** (installed via `reviewdog/action-setup@v1`) -- posts findings as inline PR comments
-2. **speciesist-language-pre-commit** (pip-installed from `Open-Paws/speciesist-language-pre-commit`) -- the actual scanner with regex-based pattern matching
+2. **no-animal-violence-pre-commit** (pip-installed from `Open-Paws/no-animal-violence-pre-commit`) -- the actual scanner with regex-based pattern matching
 3. **find + pipe** -- discovers source files by extension, excludes `.git/`, `node_modules/`, `vendor/`, pipes scanner output through reviewdog's error format parser (`-efm="%f:%l: %m"`)
 
 **Filter modes** control scope: `added` (new lines only, default), `diff_context`, `file`, or `nofilter` (entire repo).
@@ -52,5 +52,5 @@ This is a **composite GitHub Action** that chains three tools:
 ## Dependencies
 
 - Requires Python 3.x (via `actions/setup-python`)
-- Depends on [Open-Paws/speciesist-language-pre-commit](https://github.com/Open-Paws/speciesist-language-pre-commit) v0.1.0 for the scanner
+- Depends on [Open-Paws/no-animal-violence-pre-commit](https://github.com/Open-Paws/no-animal-violence-pre-commit) v0.2.0 for the scanner
 - Depends on [reviewdog/action-setup](https://github.com/reviewdog/action-setup) for the review posting engine
