@@ -1,3 +1,4 @@
+# AUTO-GENERATED from Open-Paws/no-animal-violence. Do not edit directly.
 name: 'Speciesist Language Scanner (reviewdog)'
 description: 'Run speciesist language checks and report results via reviewdog'
 author: 'Open Paws'
@@ -37,7 +38,16 @@ runs:
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
       run: |
-        find . -type f \( -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.md" -o -name "*.txt" -o -name "*.rst" -o -name "*.yaml" -o -name "*.yml" -o -name "*.go" -o -name "*.rs" -o -name "*.java" -o -name "*.rb" \) \
-          -not -path "./.git/*" -not -path "./node_modules/*" -not -path "./vendor/*" \
+        find . -type f \
+          \( -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.md" \
+             -o -name "*.txt" -o -name "*.rst" -o -name "*.yaml" -o -name "*.yml" \
+             -o -name "*.go" -o -name "*.rs" -o -name "*.java" -o -name "*.rb" \) \
+          -not -path "./.git/*" \
+          -not -path "./node_modules/*" \
+          -not -path "./vendor/*" \
           -exec no-animal-violence-check {} + 2>&1 \
-          | reviewdog -efm="%f:%l: %m" -name="no-animal-violence" -reporter=${{ inputs.reporter }} -level=${{ inputs.level }} -filter-mode=${{ inputs.filter_mode }}
+          | reviewdog -efm="%f:%l: %m" \
+              -name="no-animal-violence" \
+              -reporter=${{ inputs.reporter }} \
+              -level=${{ inputs.level }} \
+              -filter-mode=${{ inputs.filter_mode }}
