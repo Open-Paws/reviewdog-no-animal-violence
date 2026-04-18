@@ -4,6 +4,7 @@
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Speciesist%20Language%20Scanner-blue?logo=github)](https://github.com/marketplace/actions/speciesist-language-scanner-reviewdog)
 [![Status: Maintenance](https://img.shields.io/badge/Status-Maintenance-yellow.svg)](https://github.com/Open-Paws/reviewdog-no-animal-violence)
 [![Open Paws](https://img.shields.io/badge/Open%20Paws-nonprofit-brightgreen.svg)](https://openpaws.ai)
+[![desloppify score](https://img.shields.io/badge/desloppify-0.0%2F100-red)](scorecard.png)
 
 Reviewdog runner for animal violence language detection in PRs. This composite GitHub Action wraps the [no-animal-violence](https://github.com/Open-Paws/no-animal-violence) scanner in a [reviewdog](https://github.com/reviewdog/reviewdog) pipeline to post **inline review comments** with inclusive alternatives directly on the changed diff lines of pull requests. It detects speciesist phrases — language that normalises the exploitation of non-human animals — and surfaces them to contributors at review time, in context, without leaving the GitHub interface.
 
@@ -168,6 +169,10 @@ no-animal-violence (canonical rules — single source of truth)
 </details>
 
 ---
+
+## Code Quality
+
+<img src="scorecard.png" width="100%">
 
 ## Contributing
 
