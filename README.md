@@ -76,9 +76,9 @@ That is the minimum viable configuration. All other inputs use sensible defaults
 
 ### What it checks
 
-All patterns are embedded directly in `scan.py` inside this repository — 70+ phrases that normalise or trivialise the exploitation of non-human animals. The scanner checks `.py`, `.js`, `.ts`, `.md`, `.txt`, `.rst`, `.yaml`, `.yml`, `.go`, `.rs`, `.java`, and `.rb` files.
+All patterns are embedded directly in `scan.py` inside this repository — 70+ phrases that normalise or trivialise the exploitation of non-human animals. The scanner checks `.py`, `.js`, `.ts`, `.md`, `.txt`, `.rst`, `.yaml`, `.yml`, `.go`, `.rs`, `.java`, `.rb`, `.toml`, and `.sh` files.
 
-Excluded paths: `.git/`, `node_modules/`, `vendor/`
+Excluded paths: `.git/`, `node_modules/`, `vendor/` (at any directory depth)
 
 ### PR annotation format
 
@@ -141,7 +141,7 @@ This is a composite GitHub Action — the entire implementation lives in `action
 
 **Pipeline:**
 
-```
+```text
 no-animal-violence (canonical rules — embedded in scan.py)
        |
        └─> scan.py (self-contained scanner — regex engine, zero pip deps)
@@ -154,13 +154,13 @@ no-animal-violence (canonical rules — embedded in scan.py)
 **Steps in `action.yml`:**
 
 1. Install reviewdog via `reviewdog/action-setup@v1`.
-2. Discover source files across the repository using `find` (filtered by extension, excluding `.git/`, `node_modules/`, `vendor/`).
-3. Pass all discovered files to `scan.py` via `xargs`, which outputs one line per finding in `file:line: message` format.
-4. Pipe scanner output through reviewdog using `-efm="%f:%l: %m"` so each finding maps to a specific file and line.
-5. Post inline PR review comments (or check annotations, depending on `reporter`) with the phrase detected, why it is flagged, and suggested alternatives.
+2. Run `python3 scan.py` with no arguments — scan.py walks the current directory, skipping `.git/`, `node_modules/`, and `vendor/` at any depth, and outputs one line per finding.
+3. Pipe scanner output through reviewdog using `-efm="%f:%l: %m"` so each finding maps to a specific file and line.
+4. Post inline PR review comments (or check annotations, depending on `reporter`) with the phrase detected, why it is flagged, and suggested alternatives.
 
 **Output format per finding:**
-```
+
+```text
 src/utils.py:14: "kill two birds with one stone" — Violent animal idiom with universally clearer alternatives. Consider: "accomplish two things at once", "solve two problems with one action", "hit two targets with one shot"
 ```
 

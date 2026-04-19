@@ -34,14 +34,7 @@ runs:
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
       run: |
-        find . -type f \
-          \( -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.md" \
-             -o -name "*.txt" -o -name "*.rst" -o -name "*.yaml" -o -name "*.yml" \
-             -o -name "*.go" -o -name "*.rs" -o -name "*.java" -o -name "*.rb" \) \
-          -not -path "./.git/*" \
-          -not -path "./node_modules/*" \
-          -not -path "./vendor/*" \
-          -print0 | xargs -0 python3 "$GITHUB_ACTION_PATH/scan.py" 2>&1 \
+        python3 "$GITHUB_ACTION_PATH/scan.py" 2>&1 \
           | reviewdog \
               -efm="%f:%l: %m" \
               -name="no-animal-violence" \

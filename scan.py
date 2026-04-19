@@ -26,8 +26,6 @@ import sys
 #   phrase     — canonical human-readable phrase shown in the message
 #   reason     — one sentence explaining why the term is harmful
 #   alternatives — list of suggested replacements
-#   severity   — "error" | "warning" | "info" (informational only; reviewdog
-#                filters by --level independently)
 # ---------------------------------------------------------------------------
 
 RULES = [
@@ -42,7 +40,6 @@ RULES = [
             "solve two problems with one action",
             "hit two targets with one shot",
         ],
-        "severity": "error",
     },
     {
         "patterns": [re.compile(
@@ -54,7 +51,6 @@ RULES = [
             "go over old ground",
             "repeat unnecessarily",
         ],
-        "severity": "error",
     },
     {
         "patterns": [re.compile(
@@ -67,7 +63,6 @@ RULES = [
             "multiple approaches available",
             "several ways to accomplish this",
         ],
-        "severity": "error",
     },
     {
         "patterns": [re.compile(
@@ -75,7 +70,6 @@ RULES = [
         "phrase": "like shooting fish in a barrel",
         "reason": "Violent animal idiom with shorter, equally clear alternatives.",
         "alternatives": ["trivially easy", "effortless"],
-        "severity": "error",
     },
     {
         "patterns": [re.compile(
@@ -87,7 +81,6 @@ RULES = [
             "waste effort on a settled matter",
             "repeat unnecessarily",
         ],
-        "severity": "error",
     },
     {
         "patterns": [re.compile(
@@ -99,7 +92,6 @@ RULES = [
             "being nosy caused trouble",
             "curiosity led to trouble",
         ],
-        "severity": "error",
     },
     {
         "patterns": [re.compile(
@@ -112,7 +104,6 @@ RULES = [
             "running around chaotically",
             "in complete disarray",
         ],
-        "severity": "error",
     },
     {
         "patterns": [re.compile(
@@ -124,7 +115,6 @@ RULES = [
             "your fate is sealed",
             "it's over for you",
         ],
-        "severity": "error",
     },
     {
         "patterns": [re.compile(
@@ -136,7 +126,6 @@ RULES = [
             "leave to face hostility alone",
             "sacrifice someone",
         ],
-        "severity": "error",
     },
     {
         "patterns": [re.compile(
@@ -148,7 +137,6 @@ RULES = [
             "earn a living",
             "win the prize",
         ],
-        "severity": "error",
     },
     {
         "patterns": [re.compile(
@@ -160,7 +148,6 @@ RULES = [
             "be brave",
             "go for it",
         ],
-        "severity": "error",
     },
     {
         "patterns": [re.compile(
@@ -172,7 +159,6 @@ RULES = [
             "blindly following",
             "unknowingly walking into danger",
         ],
-        "severity": "error",
     },
 
     # --- Animal idioms (warning / info) ------------------------------------
@@ -186,7 +172,6 @@ RULES = [
             "disclose prematurely",
             "let it slip",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -197,7 +182,6 @@ RULES = [
             "create a complicated situation",
             "uncover hidden problems",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -209,7 +193,6 @@ RULES = [
             "pointless pursuit",
             "fool's errand",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -221,7 +204,6 @@ RULES = [
             "higher priorities",
             "bigger issues at hand",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -233,7 +215,6 @@ RULES = [
             "first to try",
             "early adopter",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -245,7 +226,6 @@ RULES = [
             "slow down",
             "be patient",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -256,7 +236,6 @@ RULES = [
             "the obvious issue",
             "the unaddressed problem",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -268,7 +247,6 @@ RULES = [
             "firsthand",
             "from the authority",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -281,7 +259,6 @@ RULES = [
             "tackle the problem directly",
             "seize the opportunity",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -293,7 +270,6 @@ RULES = [
             "extremely tight space",
             "barely any room",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -305,7 +281,6 @@ RULES = [
             "false lead",
             "misleading clue",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -317,7 +292,6 @@ RULES = [
             "without question",
             "fell for it entirely",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -329,7 +303,6 @@ RULES = [
             "limit someone's options",
             "hold someone back",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -342,7 +315,6 @@ RULES = [
             "the breaking point",
             "the final provocation",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -354,7 +326,6 @@ RULES = [
             "a sure thing beats a possibility",
             "certainty over speculation",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -366,7 +337,6 @@ RULES = [
             "swallow one's pride",
             "accept humiliation",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -378,7 +348,6 @@ RULES = [
             "clash frequently",
             "have constant conflict",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -390,7 +359,6 @@ RULES = [
             "be lured in",
             "be deceived",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -402,7 +370,6 @@ RULES = [
             "wait for confirmed results",
             "don't get ahead of yourself",
         ],
-        "severity": "info",
     },
 
     # --- Industry euphemisms -----------------------------------------------
@@ -414,7 +381,6 @@ RULES = [
             "farmed animals",
             "animals raised for food",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(r"\bpoultry\b", re.IGNORECASE)],
@@ -425,7 +391,6 @@ RULES = [
             "chickens",
             "chickens and turkeys",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(r"gestation\s+crates?", re.IGNORECASE)],
@@ -435,7 +400,6 @@ RULES = [
             "pregnancy cage",
             "pregnancy cages",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -447,7 +411,6 @@ RULES = [
             "killed en masse",
             "killing en masse",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -458,7 +421,6 @@ RULES = [
             "slaughterhouse",
             "slaughterhouses",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(r"farrowing\s+crates?", re.IGNORECASE)],
@@ -468,7 +430,6 @@ RULES = [
             "birthing cage",
             "birthing cages",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(r"battery\s+cages?", re.IGNORECASE)],
@@ -479,7 +440,6 @@ RULES = [
             "small wire cages",
             "confined cage",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(r"\bspent\s+hens?\b", re.IGNORECASE)],
@@ -490,7 +450,6 @@ RULES = [
             "discarded hens",
             "hen killed after egg production declines",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -504,7 +463,6 @@ RULES = [
             "killing",
             "killed",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(r"\bbroilers?\b", re.IGNORECASE)],
@@ -515,7 +473,6 @@ RULES = [
             "chickens raised for meat",
             "meat chicken",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(r"\bveal\b", re.IGNORECASE)],
@@ -525,7 +482,6 @@ RULES = [
             "calf flesh",
             "flesh from calves",
         ],
-        "severity": "warning",
     },
 
     # --- Tech jargon with animal references --------------------------------
@@ -539,7 +495,6 @@ RULES = [
             "bloated",
             "heavy consumer",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -551,7 +506,6 @@ RULES = [
             "ad-hoc development",
             "code without process",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(r"\bcode\s+monkeys?\b", re.IGNORECASE)],
@@ -562,7 +516,6 @@ RULES = [
             "programmer",
             "engineer",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -574,7 +527,6 @@ RULES = [
             "pressure",
             "harass",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -586,7 +538,6 @@ RULES = [
             "discover",
             "dig up",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -598,7 +549,6 @@ RULES = [
             "disposable vs. unique",
             "numbered vs. named",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(r"\bpet\s+project\b", re.IGNORECASE)],
@@ -608,7 +558,6 @@ RULES = [
             "side project",
             "passion project",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -620,7 +569,6 @@ RULES = [
             "leading indicator",
             "sentinel",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -632,7 +580,6 @@ RULES = [
             "eating your own cooking",
             "using internally",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(r"\bherding\s+cats\b", re.IGNORECASE)],
@@ -643,7 +590,6 @@ RULES = [
             "managing a distributed effort",
             "organizing chaos",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -655,7 +601,6 @@ RULES = [
             "unfocused search",
             "speculative inquiry",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(r"\bsacred\s+cows?\b", re.IGNORECASE)],
@@ -666,7 +611,6 @@ RULES = [
             "untouchable topic",
             "protected assumption",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -678,7 +622,6 @@ RULES = [
             "fall person",
             "wrongly blamed",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(r"\brat\s+race\b", re.IGNORECASE)],
@@ -689,7 +632,6 @@ RULES = [
             "competitive treadmill",
             "endless hustle",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -701,7 +643,6 @@ RULES = [
             "false recovery",
             "brief uptick",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -713,7 +654,6 @@ RULES = [
             "cutthroat",
             "fiercely competitive",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -725,7 +665,6 @@ RULES = [
             "endless loop",
             "unwinnable game",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(r"\bcash\s+cows?\b", re.IGNORECASE)],
@@ -736,7 +675,6 @@ RULES = [
             "reliable revenue source",
             "money maker",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -748,7 +686,6 @@ RULES = [
             "person set up to fail",
             "someone sacrificed for others",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(r"\bsitting\s+ducks?\b", re.IGNORECASE)],
@@ -759,7 +696,6 @@ RULES = [
             "vulnerable target",
             "exposed",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(r"\bopen\s+season\b", re.IGNORECASE)],
@@ -770,7 +706,6 @@ RULES = [
             "unrestricted criticism",
             "no holds barred",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -782,7 +717,6 @@ RULES = [
             "phase out",
             "sunset",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(r"\bdead\s+ducks?\b", re.IGNORECASE)],
@@ -793,7 +727,6 @@ RULES = [
             "doomed effort",
             "foregone conclusion",
         ],
-        "severity": "info",
     },
 
     # --- Technical process language ----------------------------------------
@@ -807,7 +740,6 @@ RULES = [
             "stop the process",
             "end the process",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -819,7 +751,6 @@ RULES = [
             "shut down the server",
             "terminate the server",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(
@@ -831,7 +762,6 @@ RULES = [
             "wipe clean",
             "remove entirely",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(r"\babort(?:ed|ing)?\b", re.IGNORECASE)],
@@ -842,7 +772,6 @@ RULES = [
             "stop",
             "halt",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(r"\bcull(?:ed|ing|s)?\b", re.IGNORECASE)],
@@ -854,7 +783,6 @@ RULES = [
             "trim",
             "filter out",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(r"\bmaster[/\\]slave\b", re.IGNORECASE)],
@@ -865,7 +793,6 @@ RULES = [
             "leader/follower",
             "controller/worker",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -877,7 +804,6 @@ RULES = [
             "permit list/block list",
             "inclusion list/exclusion list",
         ],
-        "severity": "warning",
     },
     {
         "patterns": [re.compile(
@@ -889,7 +815,6 @@ RULES = [
             "exempt",
             "pre-existing",
         ],
-        "severity": "info",
     },
     {
         "patterns": [re.compile(r"\blame[\s-]duck\b", re.IGNORECASE)],
@@ -900,7 +825,6 @@ RULES = [
             "transitional",
             "ineffective",
         ],
-        "severity": "info",
     },
 ]
 
