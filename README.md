@@ -5,7 +5,7 @@
 [![Status: Maintenance](https://img.shields.io/badge/Status-Maintenance-yellow.svg)](https://github.com/Open-Paws/reviewdog-no-animal-violence)
 [![Open Paws](https://img.shields.io/badge/Open%20Paws-nonprofit-brightgreen.svg)](https://openpaws.ai)
 
-Reviewdog runner for animal violence language detection in PRs. This composite GitHub Action wraps the [no-animal-violence](https://github.com/Open-Paws/no-animal-violence) scanner in a [reviewdog](https://github.com/reviewdog/reviewdog) pipeline to post **inline review comments** with inclusive alternatives directly on the changed diff lines of pull requests. It detects speciesist phrases — language that normalises the exploitation of non-human animals — and surfaces them to contributors at review time, in context, without leaving the GitHub interface.
+Reviewdog runner for animal violence language detection in PRs. This composite GitHub Action embeds a self-contained Python scanner in a [reviewdog](https://github.com/reviewdog/reviewdog) pipeline to post **inline review comments** with inclusive alternatives directly on the changed diff lines of pull requests. It detects speciesist phrases — language that normalises the exploitation of non-human animals — and surfaces them to contributors at review time, in context, without leaving the GitHub interface.
 
 > [!NOTE]
 > This project is part of the [Open Paws](https://openpaws.ai) ecosystem — AI infrastructure for the animal liberation movement. [Explore the full platform →](https://github.com/Open-Paws)
@@ -22,19 +22,18 @@ When a PR adds a line containing a detected phrase, reviewdog posts an inline co
 + config["workers"] = get_cattle_pool()  # scale ephemeral vs. persistent dynamically
 
 # Reviewdog inline comment on the diff line:
-[no-animal-violence] "cattle" used as a metaphor for people → use "ephemeral" instead.
-See: https://github.com/Open-Paws/no-animal-violence
+[no-animal-violence] "cattle vs. pets" — Infrastructure metaphor that treats animals as objects — technically imprecise alternatives exist. Consider: "ephemeral vs. persistent", "disposable vs. unique", "numbered vs. named"
 ```
 
 Other examples posted as inline comments:
 
-| Detected phrase | Suggested alternative |
-|---|---|
-| `kill two birds with one stone` | `feed two birds with one scone` |
-| `beat a dead horse` | `feed a fed horse` |
-| `guinea pig` (used as a verb) | `test subject` |
-| `more than one way to skin a cat` | `more than one way to solve this` |
-| `cattle` (as metaphor for people) | `ephemeral` |
+| Detected phrase | Why it is flagged | Suggested alternatives |
+|---|---|---|
+| `kill two birds with one stone` | Violent animal idiom with universally clearer alternatives. | `accomplish two things at once`, `solve two problems with one action` |
+| `beat a dead horse` | Violent animal idiom — alternatives are more direct. | `belabor the point`, `go over old ground` |
+| `guinea pig` (used as a verb) | Uses an animal-as-experiment metaphor. | `test subject`, `early adopter` |
+| `more than one way to skin a cat` | Violent animal idiom — alternatives are shorter and clearer. | `more than one way to solve this` |
+| `cattle vs. pets` | Infrastructure metaphor that treats animals as objects. | `ephemeral vs. persistent` |
 
 Full pattern list: [no-animal-violence canonical rules](https://github.com/Open-Paws/no-animal-violence)
 
@@ -62,13 +61,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
       - uses: Open-Paws/reviewdog-no-animal-violence@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
+
+Note: `actions/setup-python` is no longer required — the action uses the Python 3 runtime already present on all GitHub-hosted runners.
 
 That is the minimum viable configuration. All other inputs use sensible defaults.
 
@@ -78,7 +76,7 @@ That is the minimum viable configuration. All other inputs use sensible defaults
 
 ### What it checks
 
-All patterns originate from the [no-animal-violence](https://github.com/Open-Paws/no-animal-violence) canonical rule dictionary — 65+ phrases that normalise or trivialise the exploitation of non-human animals. The scanner checks `.py`, `.js`, `.ts`, `.md`, `.txt`, `.rst`, `.yaml`, `.yml`, `.go`, `.rs`, `.java`, and `.rb` files.
+All patterns are embedded directly in `scan.py` inside this repository — 70+ phrases that normalise or trivialise the exploitation of non-human animals. The scanner checks `.py`, `.js`, `.ts`, `.md`, `.txt`, `.rst`, `.yaml`, `.yml`, `.go`, `.rs`, `.java`, and `.rb` files.
 
 Excluded paths: `.git/`, `node_modules/`, `vendor/`
 
@@ -87,9 +85,10 @@ Excluded paths: `.git/`, `node_modules/`, `vendor/`
 Each finding is posted as a native GitHub review comment on the exact diff line that triggered it, using the format:
 
 ```
-[no-animal-violence] "<phrase>" → use "<alternative>" instead.
-See: https://github.com/Open-Paws/no-animal-violence
+[no-animal-violence] "<phrase>" — <reason>. Consider: "<alt1>", "<alt2>"
 ```
+
+This gives reviewers the full picture — what was detected, why it is flagged, and what to use instead — in one inline comment.
 
 ### Inputs
 
@@ -127,7 +126,6 @@ Teams using Danger.js can use the [danger-plugin-no-animal-violence](https://git
 ## Documentation
 
 - [no-animal-violence canonical rules](https://github.com/Open-Paws/no-animal-violence) — full pattern dictionary and rationale
-- [no-animal-violence-pre-commit](https://github.com/Open-Paws/no-animal-violence-pre-commit) — the scanner this action wraps
 - [no-animal-violence-action](https://github.com/Open-Paws/no-animal-violence-action) — alternative action using Check annotations
 - [eslint-plugin-no-animal-violence](https://github.com/Open-Paws/eslint-plugin-no-animal-violence) — ESLint integration
 - [semgrep-rules-no-animal-violence](https://github.com/Open-Paws/semgrep-rules-no-animal-violence) — Semgrep rules
@@ -139,14 +137,14 @@ Teams using Danger.js can use the [danger-plugin-no-animal-violence](https://git
 <details>
 <summary>Architecture</summary>
 
-This is a composite GitHub Action — the entire implementation lives in `action.yml`. No build step, no published package.
+This is a composite GitHub Action — the entire implementation lives in `action.yml` and `scan.py`. No build step, no pip install, no external Python dependencies.
 
 **Pipeline:**
 
 ```
-no-animal-violence (canonical rules — single source of truth)
+no-animal-violence (canonical rules — embedded in scan.py)
        |
-       └─> no-animal-violence-pre-commit (scanner — regex engine + CLI, v0.2.0)
+       └─> scan.py (self-contained scanner — regex engine, zero pip deps)
                   |
                   └─> reviewdog-no-animal-violence (this repo)
                              |
@@ -156,14 +154,19 @@ no-animal-violence (canonical rules — single source of truth)
 **Steps in `action.yml`:**
 
 1. Install reviewdog via `reviewdog/action-setup@v1`.
-2. Install `no-animal-violence-pre-commit` scanner (pip, pinned to v0.2.0).
-3. Discover source files across the repository using `find` (filtered by extension, excluding `.git/`, `node_modules/`, `vendor/`).
+2. Discover source files across the repository using `find` (filtered by extension, excluding `.git/`, `node_modules/`, `vendor/`).
+3. Pass all discovered files to `scan.py` via `xargs`, which outputs one line per finding in `file:line: message` format.
 4. Pipe scanner output through reviewdog using `-efm="%f:%l: %m"` so each finding maps to a specific file and line.
-5. Post inline PR review comments (or check annotations, depending on `reporter`) with the phrase detected and its suggested alternative.
+5. Post inline PR review comments (or check annotations, depending on `reporter`) with the phrase detected, why it is flagged, and suggested alternatives.
 
-**Pattern updates:** This action does not define any patterns itself. It is only the reviewdog integration layer. When the canonical rules change, updating the scanner version pin in `action.yml` is all that is required.
+**Output format per finding:**
+```
+src/utils.py:14: "kill two birds with one stone" — Violent animal idiom with universally clearer alternatives. Consider: "accomplish two things at once", "solve two problems with one action", "hit two targets with one shot"
+```
 
-**Tech stack:** GitHub Actions composite action · Python (via pip) · reviewdog · Bash
+**Pattern updates:** Patterns are embedded in `scan.py`. When the canonical rules change, update `scan.py` directly.
+
+**Tech stack:** GitHub Actions composite action · Python 3 (stdlib only) · reviewdog · Bash
 
 </details>
 
@@ -174,12 +177,10 @@ no-animal-violence (canonical rules — single source of truth)
 Contributions are welcome from anyone who wants to make software development more consistent with animal advocacy values.
 
 1. Clone the repo and create a feature branch.
-2. Edit `action.yml` — this is the entire implementation.
+2. Edit `scan.py` to add or update rules, or edit `action.yml` for pipeline changes.
 3. Test by opening a PR (in this or another repo that uses the action) containing a known phrase from the [canonical rules](https://github.com/Open-Paws/no-animal-violence). Verify an inline comment appears on the correct diff line.
 4. Run `desloppify scan --path .` — minimum score ≥85.
 5. Open a PR and describe what you changed and why.
-
-**Note:** Pattern definitions belong in [no-animal-violence](https://github.com/Open-Paws/no-animal-violence), not here. Contributions that add patterns to this repo will be redirected upstream.
 
 ---
 
