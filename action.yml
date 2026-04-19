@@ -29,24 +29,14 @@ runs:
   steps:
     - uses: reviewdog/action-setup@v1
 
-    - name: Install no-animal-violence checker
-      shell: bash
-      run: pip install https://github.com/Open-Paws/no-animal-violence-pre-commit/archive/refs/tags/v0.2.0.tar.gz
-
-    - name: Run no-animal-violence check with reviewdog
+    - name: Scan for language that normalizes violence toward animals
       shell: bash
       env:
         REVIEWDOG_GITHUB_API_TOKEN: ${{ inputs.github_token }}
       run: |
-        find . -type f \
-          \( -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.md" \
-             -o -name "*.txt" -o -name "*.rst" -o -name "*.yaml" -o -name "*.yml" \
-             -o -name "*.go" -o -name "*.rs" -o -name "*.java" -o -name "*.rb" \) \
-          -not -path "./.git/*" \
-          -not -path "./node_modules/*" \
-          -not -path "./vendor/*" \
-          -exec no-animal-violence-check {} + 2>&1 \
-          | reviewdog -efm="%f:%l: %m" \
+        python3 "$GITHUB_ACTION_PATH/scan.py" 2>&1 \
+          | reviewdog \
+              -efm="%f:%l: %m" \
               -name="no-animal-violence" \
               -reporter=${{ inputs.reporter }} \
               -level=${{ inputs.level }} \
