@@ -1,0 +1,192 @@
+version: "1"
+interaction: hook
+# Personas for the reviewdog-no-animal-violence composite action — covers the four CI scenarios a Scout agent needs to exercise.
+
+personas:
+  - id: clean-pr
+    name: PR with clean changed files
+    description: >
+      A contributor opens a PR that adds or modifies files but none of the
+      changed lines contain speciesist language. The action should complete
+      without posting any inline review comments, and the reviewdog check
+      should pass green.
+    environment:
+      runtime: github-actions
+      os: ubuntu-latest
+    flows:
+      - id: clean-pr-flow
+        name: Clean PR check passes with no comments
+        steps:
+          - run: >
+              Trigger a pull_request event. The PR diff contains only lines
+              such as variable assignments and function calls that match none
+              of the 158 patterns embedded in scan.py.
+          - run: >
+              actions/checkout@v4 checks out the branch. The composite action
+              installs reviewdog via reviewdog/action-setup@v1, then runs
+              no-animal-violence-check on all matched file types (.py, .js,
+              .ts, .md, .txt, .rst, .yaml, .yml, .go, .rs, .java, .rb,
+              .toml, .sh). The scanner emits no output lines because no
+              patterns match.
+          - run: >
+              The empty scanner output is piped to reviewdog with
+              -efm="%f:%l: %m" and -filter-mode=added. Reviewdog finds no
+              findings to post, so no inline PR review comments are created.
+        expected_outcome: Reviewdog check passes with zero inline comments posted
+    assertions:
+      succeeds:
+        - PR with clean files produces a passing check
+        - No inline PR review comments are posted on the pull request
+        - The workflow job exits with code 0
+      fails_gracefully:
+        - If scanner output is empty, reviewdog exits cleanly without error
+      output_contains:
+        - No findings output from no-animal-violence-check
+
+  - id: violations-in-diff
+    name: PR with speciesist language in changed lines
+    description: >
+      A contributor opens a PR where one or more newly added lines contain a
+      phrase from the canonical no-animal-violence rule set (e.g. "kill two
+      birds with one stone", "cattle vs. pets", "guinea pig" used as a verb).
+      The action should post an inline review comment on each offending diff
+      line with the detected phrase, the reason it is flagged, and suggested
+      alternatives.
+    environment:
+      runtime: github-actions
+      os: ubuntu-latest
+    flows:
+      - id: violations-in-diff-flow
+        name: Inline comments appear at the correct diff lines
+        steps:
+          - run: >
+              Trigger a pull_request event. The PR diff adds a line such as:
+              config["workers"] = get_pool()  # scale cattle vs. pets dynamically
+          - run: >
+              The composite action checks out the branch, installs reviewdog,
+              and runs no-animal-violence-check. The scanner matches
+              "cattle vs. pets" on line N of the modified file and emits a
+              finding in the format scan.py produces:
+              path/to/file.py:N: "cattle vs. pets" — Infrastructure metaphor
+              that treats animals as objects — technically imprecise
+              alternatives exist. Consider: "ephemeral vs. persistent",
+              "disposable vs. unique", "numbered vs. named"
+          - run: >
+              The output line is forwarded to reviewdog with
+              -efm="%f:%l: %m", -name="no-animal-violence",
+              -reporter=github-pr-review, and -filter-mode=added (defaults).
+              Reviewdog maps the finding to the exact diff line and posts a
+              native GitHub PR review comment inline.
+        expected_outcome: Inline PR review comments appear at the exact diff lines that contain violations
+    assertions:
+      succeeds:
+        - PR with violations in added lines produces inline review comments
+        - Each comment is anchored to the correct file and line number
+        - Comment body begins with [no-animal-violence]
+      fails_gracefully:
+        - If REVIEWDOG_GITHUB_API_TOKEN is invalid, reviewdog exits with a
+          non-zero code and the workflow step fails visibly rather than silently
+      output_contains:
+        - "[no-animal-violence]"
+        - The detected phrase in quotation marks
+        - "Consider: followed by at least one suggested alternative"
+
+  - id: violations-outside-diff
+    name: PR with violations only in unchanged lines
+    description: >
+      A contributor opens a PR that modifies a file, but the speciesist
+      language already existed in lines that were not touched by the PR diff.
+      With the default filter_mode=added, reviewdog must not post comments on
+      lines that were not added by this PR — only newly introduced violations
+      are in scope.
+    environment:
+      runtime: github-actions
+      os: ubuntu-latest
+    flows:
+      - id: violations-outside-diff-flow
+        name: No comments posted on pre-existing violations outside the diff
+        steps:
+          - run: >
+              Trigger a pull_request event. The PR diff modifies one function
+              in utils.py (e.g. adds a log statement). Elsewhere in utils.py
+              an existing comment contains "beat a dead horse", but that line
+              is not part of the PR diff.
+          - run: >
+              scan.py walks the full file and emits a finding for the
+              pre-existing line. The finding is piped to reviewdog with
+              -filter-mode=added (default).
+          - run: >
+              Reviewdog compares the finding's line number against the PR diff
+              hunks. Because the line is not in the added section, reviewdog
+              suppresses the comment. No inline annotation is posted.
+        expected_outcome: No inline comments posted; pre-existing violations are silently filtered by reviewdog's added filter
+    assertions:
+      succeeds:
+        - Workflow completes without posting any inline PR review comments
+        - The check may still report a finding count in the job summary, but no
+          comment appears on the unchanged line
+      fails_gracefully:
+        - If filter_mode is changed to file or nofilter, the pre-existing
+          violation will surface — this is intentional and documented in the
+          README filter mode table
+      output_contains:
+        - No inline review comment body in the PR thread for the unchanged line
+
+  - id: maintainer-setup
+    name: First-time setup by a repo maintainer
+    description: >
+      A repo maintainer who has never used this action before follows the
+      Quickstart in README.md to add the workflow file to their repository.
+      They create .github/workflows/speciesism.yml, open a test PR containing
+      a known violation, and verify that inline comments appear as expected.
+    environment:
+      runtime: github-actions
+      os: ubuntu-latest
+    flows:
+      - id: maintainer-setup-flow
+        name: Maintainer installs and validates the action end-to-end
+        steps:
+          - run: >
+              Maintainer creates .github/workflows/speciesism.yml with the
+              minimum viable configuration from the README: trigger on
+              pull_request, permissions contents:read and pull-requests:write,
+              one step using Open-Paws/reviewdog-no-animal-violence@v1 with
+              github_token set to secrets.GITHUB_TOKEN.
+          - run: >
+              Maintainer opens a test PR that adds a line containing a known
+              phrase from the canonical rule set — for example
+              "kill two birds with one stone" in a comment or string literal
+              in a .py, .ts, or .md file.
+          - run: >
+              The workflow triggers automatically on the pull_request event.
+              The composite action installs reviewdog, runs the scanner, and
+              pipes findings to reviewdog with default inputs
+              (reporter=github-pr-review, level=warning, filter_mode=added).
+          - run: >
+              Reviewdog posts an inline PR review comment on the diff line
+              containing the test phrase. The maintainer sees the comment in
+              the GitHub PR Files tab, confirming end-to-end setup is correct.
+          - run: >
+              Optionally, the maintainer adjusts inputs — e.g. sets
+              level=error to block merge on violations, or
+              filter_mode=nofilter for a full repository audit on first
+              adoption — and re-runs the workflow to verify the changed
+              behaviour.
+        expected_outcome: Inline comment appears on the test PR diff line confirming the action is correctly installed
+    assertions:
+      succeeds:
+        - Workflow appears in the Actions tab after the first pull_request event
+        - Inline comment is posted on the test violation line without any extra
+          configuration beyond the README Quickstart
+        - The pull-requests:write permission is present, which is required for
+          the github-pr-review reporter
+      fails_gracefully:
+        - If pull-requests:write permission is missing, reviewdog logs a clear
+          API permission error rather than silently succeeding with no comments
+        - If the repository uses a branch name other than main, the workflow
+          file path .github/workflows/speciesism.yml is still correct and no
+          other change is needed
+      output_contains:
+        - "[no-animal-violence]" in the inline PR review comment body
+        - The detected phrase in quotation marks followed by an em-dash and the reason
+        - "Consider: followed by suggested alternatives"
