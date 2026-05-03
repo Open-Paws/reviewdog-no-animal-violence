@@ -18,6 +18,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: false
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -38,33 +39,67 @@ jobs:
       - name: Install desloppify
         run: pip install "/tmp/desloppify[full]"
 
-      - name: Run quality gate
+      - name: Run quality gate (diff mode)
         run: |
-          SCAN_OUTPUT=$(desloppify scan --path . --profile ci --no-badge 2>&1)
-          echo "${SCAN_OUTPUT}"
-          SCORE=$(echo "${SCAN_OUTPUT}" | grep -oP 'objective \K[\d.]+(?=/100)')
-          if [ -z "${SCORE}" ]; then
-            echo "ERROR: could not extract objective score from desloppify output"
+          SCAN_PATH="."
+          BASE_REF="${{ github.event.pull_request.base.sha }}"
+          if [ -z "$BASE_REF" ]; then
+            echo "No PR base SHA (workflow_dispatch?) — diffing against HEAD~1"
+            BASE_REF="HEAD~1"
+          fi
+
+          # Measure base score in an isolated worktree so the working tree is untouched.
+          # Run scan and status from within the worktree directory — desloppify may store
+          # state relative to the scanned path.
+          git worktree add /tmp/base-score "$BASE_REF"
+          BASE_SCORE=$(
+            cd /tmp/base-score
+            desloppify scan --path . --profile ci --no-badge > /dev/null 2>&1 || true
+            STATUS=$(desloppify status --json 2>&1)
+            SCORE=$(echo "$STATUS" | jq -r '.verified_strict_score // .strict_score // empty')
+            if [ -z "$SCORE" ] || [ "$SCORE" = "null" ]; then
+              SCORE=$(echo "$STATUS" | jq -r '.overall_score // .score // empty')
+            fi
+            if [ -z "$SCORE" ] || [ "$SCORE" = "null" ]; then
+              echo "ERROR: could not extract base score" >&2
+              echo "$STATUS" | head -50 >&2
+              exit 1
+            fi
+            echo "$SCORE"
+          )
+          git worktree remove --force /tmp/base-score
+
+          # Measure head score in the current working tree.
+          desloppify scan --path "${SCAN_PATH}" --profile ci --no-badge > /dev/null 2>&1 || true
+          STATUS=$(desloppify status --json 2>&1)
+          HEAD_SCORE=$(echo "$STATUS" | jq -r '.verified_strict_score // .strict_score // empty')
+          if [ -z "$HEAD_SCORE" ] || [ "$HEAD_SCORE" = "null" ]; then
+            HEAD_SCORE=$(echo "$STATUS" | jq -r '.overall_score // .score // empty')
+          fi
+          if [ -z "$HEAD_SCORE" ] || [ "$HEAD_SCORE" = "null" ]; then
+            echo "ERROR: could not extract head score"
+            echo "$STATUS" | head -50
             exit 1
           fi
-          echo "Objective score: ${SCORE}/100"
+
+          echo "Base score: ${BASE_SCORE}/100"
+          echo "Head score: ${HEAD_SCORE}/100"
+
           python3 -c "
-          score = float('${SCORE}')
-          threshold = 70
-          if score < threshold:
-              print(f'FAIL: objective score {score} is below the minimum {threshold}')
+          base = float('${BASE_SCORE}')
+          head = float('${HEAD_SCORE}')
+          if head < base:
+              print(f'FAIL: score dropped from {base} to {head} (new violations introduced)')
               raise SystemExit(1)
-          print(f'PASS: objective score {score} >= {threshold}')
+          print(f'PASS: score {head} >= base {base}')
           "
-          echo "## Desloppify Quality Gate" >> "${GITHUB_STEP_SUMMARY}"
-          echo "" >> "${GITHUB_STEP_SUMMARY}"
-          echo "| | |" >> "${GITHUB_STEP_SUMMARY}"
-          echo "|---|---|" >> "${GITHUB_STEP_SUMMARY}"
-          echo "| Objective score | **${SCORE}/100** |" >> "${GITHUB_STEP_SUMMARY}"
-          echo "| Threshold | 70 |" >> "${GITHUB_STEP_SUMMARY}"
-          echo "| Scan path | \`.\` |" >> "${GITHUB_STEP_SUMMARY}"
-          python3 -c "
-          score = float('${SCORE}')
-          result = 'PASS' if score >= 70 else 'FAIL'
-          print(f'| Result | **{result}** |')
-          " >> "${GITHUB_STEP_SUMMARY}"
+
+          {
+            echo "## Desloppify Quality Gate"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Base score | **${BASE_SCORE}/100** |"
+            echo "| Head score | **${HEAD_SCORE}/100** |"
+            echo "| Scan path | \`${SCAN_PATH}\` |"
+          } >> "${GITHUB_STEP_SUMMARY}"
