@@ -51,9 +51,11 @@ jobs:
           # Measure base score in an isolated worktree so the working tree is untouched.
           # Run scan and status from within the worktree directory — desloppify may store
           # state relative to the scanned path.
-          git worktree add /tmp/base-score "$BASE_REF"
+          WORKTREE_DIR=/tmp/base-score
+          trap 'git worktree remove --force "$WORKTREE_DIR" >/dev/null 2>&1 || true' EXIT
+          git worktree add --detach "$WORKTREE_DIR" "$BASE_REF"
           BASE_SCORE=$(
-            cd /tmp/base-score
+            cd "$WORKTREE_DIR"
             desloppify scan --path . --profile ci --no-badge > /dev/null 2>&1 || true
             STATUS=$(desloppify status --json 2>&1)
             SCORE=$(echo "$STATUS" | jq -r '.verified_strict_score // .strict_score // empty')
@@ -67,7 +69,8 @@ jobs:
             fi
             echo "$SCORE"
           )
-          git worktree remove --force /tmp/base-score
+          git worktree remove --force "$WORKTREE_DIR"
+          trap - EXIT
 
           # Measure head score in the current working tree.
           desloppify scan --path "${SCAN_PATH}" --profile ci --no-badge > /dev/null 2>&1 || true
